@@ -5,7 +5,12 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
 
+const authenticationRoutes = require('./routes/authentication/index')
+
+
 applyMiddleware(app);
+
+app.use(authenticationRoutes);
 
 app.get('/health', (req, res) => {
     res.send('MediCare is running')
