@@ -29,16 +29,8 @@ async function run() {
 
     const districtCollection = client.db("MediCareDb").collection("districts");
     const upazilaCollection = client.db("MediCareDb").collection("upazilas");
-
     const userCollection = client.db("MediCareDb").collection("users");
-
-    // const menuCollection = client.db("bistroDb").collection("menu");
-
-    // const reviewCollection = client.db("bistroDb").collection("reviews");
-
-    // const cartCollection = client.db("bistroDb").collection("carts");
-
-    // const paymentCollection = client.db("bistroDb").collection("payments");
+    const testCollection = client.db("MediCareDb").collection("tests");
 
     app.get('/districts', async (req, res) => {
       const result = await districtCollection.find().toArray();
@@ -98,7 +90,6 @@ async function run() {
       if (email !== req.decoded.email) {
         return res.status(403).send({ message: 'forbidden access' })
       }
-
       const query = { email: email };
       const user = await userCollection.findOne(query);
       let admin = false;
@@ -156,8 +147,16 @@ async function run() {
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     })
-
     // user related api ---------------end-------------
+
+    // all tests related api end point ----Start---------
+
+    // get all tests
+    app.get('/allTests', async (req, res) => {
+      const result = await testCollection.find().toArray();
+      res.send(result);
+    });
+
 
     app.get('/menu', async (req, res) => {
       const result = await menuCollection.find().toArray();
