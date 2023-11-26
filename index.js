@@ -142,6 +142,19 @@ async function run() {
       }
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
+    });
+
+    // update user status
+    app.patch('/updateUserStatus/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: 'blocked'
+        }
+      }
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
     })
 
     // user related api ---------------end-------------
