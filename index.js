@@ -187,22 +187,6 @@ async function run() {
     });
 
 
-    app.post('/menu', verifyToken, verifyAdmin, async (req, res) => {
-      const item = req.body;
-      const result = await menuCollection.insertOne(item);
-      res.send(result);
-    })
-
-    // delete menu api 
-    app.delete('/menu/:id', verifyToken, verifyAdmin, async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) }
-      // console.log(query);
-      // const query = { _id: new ObjectId(id) }
-      const result = await menuCollection.deleteOne(query);
-      res.send(result)
-    })
-
     // update menu
     app.patch('/menuEdit/:id', async (req, res) => {
       const item = req.body;
@@ -224,7 +208,7 @@ async function run() {
     })
 
 
-    // get carts collection as per user email
+    // get Appointments collection as per user email
     app.get('/upcomingAppointments', verifyToken, async (req, res) => {
       const email = req.query.email;
       const query = { email: email }
