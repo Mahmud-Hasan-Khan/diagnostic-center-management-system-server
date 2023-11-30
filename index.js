@@ -30,18 +30,9 @@ async function run() {
     const districtCollection = client.db("MediCareDb").collection("districts");
     const upazilaCollection = client.db("MediCareDb").collection("upazilas");
     const userCollection = client.db("MediCareDb").collection("users");
-    const testCollection = client.db("MediCareDb").collection("tests");
-
-    app.get('/districts', async (req, res) => {
-      const result = await districtCollection.find().toArray();
-      res.send(result);
-    });
-
-    app.get('/upazilas', async (req, res) => {
-      const result = await upazilaCollection.find().toArray();
-      res.send(result);
-    });
-
+    const testCollection = client.db("MediCareDb").collection("allTests");
+    const appointmentCollection = client.db("MediCareDb").collection("upcomingAppointments");
+    const paymentCollection = client.db("MediCareDb").collection("payments");
     // jwt related api start
     app.post('/jwt', async (req, res) => {
       const user = req.body;
@@ -77,6 +68,15 @@ async function run() {
       next();
     }
 
+    app.get('/districts', async (req, res) => {
+      const result = await districtCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get('/upazilas', async (req, res) => {
+      const result = await upazilaCollection.find().toArray();
+      res.send(result);
+    });
 
     // get user
     app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
@@ -151,25 +151,41 @@ async function run() {
 
     // all tests related api end point ----Start---------
 
-    // get all tests
     app.get('/allTests', async (req, res) => {
-      const result = await testCollection.find().toArray();
-      res.send(result);
+      const today = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
+      console.log('Today:', today);
+      try {
+        const result = await testCollection.find({
+          'availableDates.date': { $gte: today },
+        }).toArray();
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
     });
 
-
-    app.get('/menu', async (req, res) => {
-      const result = await menuCollection.find().toArray();
-      res.send(result);
-    });
-
-    // get menu as per Id
-    app.get('/menu/:id', async (req, res) => {
+    app.get('/test/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
-      const result = await menuCollection.findOne(query);
+      const result = await testCollection.findOne(query);
       res.send(result);
     });
+
+    app.patch('/updateSlot/:id/decrementSlot', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+
+      // Use $inc with a negative value to decrement the slots field
+      const result = await testCollection.updateOne(query, { $inc: { 'availableDates.$.slots': -1 } });
+
+      if (result.matchedCount === 1 && result.modifiedCount === 1) {
+        res.status(200).send('Slots decremented successfully');
+      } else {
+        res.status(404).send('Test not found or slots count not updated');
+      }
+    });
+
 
     app.post('/menu', verifyToken, verifyAdmin, async (req, res) => {
       const item = req.body;
@@ -207,29 +223,32 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/reviews', async (req, res) => {
-      const result = await reviewCollection.find().toArray();
-      res.send(result);
-    })
-
-    // // get carts collection
-    // app.get('/carts', async (req, res) => {
-    //   const result = await cartCollection.find().toArray();
-    //   res.send(result);
-    // });
 
     // get carts collection as per user email
-    app.get('/carts', async (req, res) => {
+    app.get('/upcomingAppointments', verifyToken, async (req, res) => {
       const email = req.query.email;
       const query = { email: email }
-      const result = await cartCollection.find(query).toArray();
+      const result = await appointmentCollection.find(query).toArray();
       res.send(result);
     });
 
-    //create cart collection
-    app.post('/carts', async (req, res) => {
-      const cartItem = req.body;
-      const result = await cartCollection.insertOne(cartItem)
+    //create Appointments collection
+    app.post('/upcomingAppointments', verifyToken, async (req, res) => {
+      const appointment = req.body;
+      const result = await appointmentCollection.insertOne(appointment)
+      res.send(result);
+    });
+
+    // update user role
+    app.patch('/upcomingAppointment/:id', verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          testStatus: 'Canceled'
+        }
+      }
+      const result = await appointmentCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
@@ -273,18 +292,7 @@ async function run() {
     app.post('/payments', async (req, res) => {
       const payment = req.body;
       const paymentResult = await paymentCollection.insertOne(payment);
-
-      //  carefully delete each item from the cart
-      console.log('payment info', payment);
-      const query = {
-        _id: {
-          $in: payment.cartIds.map(id => new ObjectId(id))
-        }
-      };
-
-      const deleteResult = await cartCollection.deleteMany(query);
-
-      res.send({ paymentResult, deleteResult });
+      res.send(paymentResult);
     });
 
 
