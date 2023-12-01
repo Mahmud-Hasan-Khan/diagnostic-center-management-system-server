@@ -84,6 +84,14 @@ async function run() {
       res.send(result);
     });
 
+    // get each user by id
+    app.get('/user/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    })
+
     //get admin 
     app.get('/user/admin/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
@@ -107,7 +115,6 @@ async function run() {
       res.send(result);
     });
 
-
     //create user collection
     app.post('/users', async (req, res) => {
       const user = req.body;
@@ -122,6 +129,25 @@ async function run() {
         res.send(result);
       }
     });
+
+    // update menu
+    app.patch('/editUserProfile/:id', verifyToken, async (req, res) => {
+      const userProfile = req.body;
+      const id = req.params.id;
+      // const filter = { _id: new ObjectId(id) }
+      const filter = { _id: new ObjectId(id) }
+      const updatedDoc = {
+        $set: {
+          name: userProfile.name,
+          email: userProfile.email,
+          bloodGroup: userProfile.bloodGroup,
+          district: userProfile.district,
+          upazila: userProfile.upazila,
+        }
+      }
+      const result = await userCollection.updateOne(filter, updatedDoc)
+      res.send(result);
+    })
 
     // delete user api 
     app.delete('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
@@ -227,8 +253,29 @@ async function run() {
     //create Appointments collection
     app.post('/upcomingAppointments', verifyToken, async (req, res) => {
       const appointment = req.body;
+      const id = req.query.id;
+      // console.log(id);
+      const date = appointment.appointmentDate.split('/')
+      let [month, day, year] = date
+      if (parseInt(month) < 10) {
+        month = '0' + month
+      }
+      if (parseInt(day) < 10) {
+        day = '0' + day
+      }
+
+      const actualDate = `${year}-${month}-${day}`
+      // console.log(date);
+      const result1 = await testCollection.updateOne({ _id: new ObjectId(id), "availableDates.date": actualDate }, {
+        $inc: {
+          "availableDates.$.slots": -1
+        }
+      })
+      // console.log(result1);
+      // console.log(appointment.appointmentDate.split('T')[0]);
       const result = await appointmentCollection.insertOne(appointment)
       res.send(result);
+
     });
 
     // update user role
