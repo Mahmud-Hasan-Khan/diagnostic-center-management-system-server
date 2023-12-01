@@ -99,6 +99,15 @@ async function run() {
       res.send({ admin })
     })
 
+    // get user as per user email
+    app.get('/userProfile', verifyToken, async (req, res) => {
+      const user = req.query.email;
+      const query = { email: user }
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
+
+
     //create user collection
     app.post('/users', async (req, res) => {
       const user = req.body;
@@ -202,7 +211,6 @@ async function run() {
           image: item.image
         }
       }
-
       const result = await menuCollection.updateOne(filter, updatedDoc)
       res.send(result);
     })
