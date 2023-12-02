@@ -118,8 +118,6 @@ async function run() {
     //create user collection
     app.post('/users', async (req, res) => {
       const user = req.body;
-      // insert email if user doesn't exist
-      // can do this many ways (1. email unique, 2. upsert, 3. simple checking)
       const query = { email: user.email }
       const existingUser = await userCollection.findOne(query);
       if (existingUser) {
@@ -204,6 +202,14 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
       const result = await testCollection.findOne(query);
+      res.send(result);
+    });
+
+    // cerate API for add a new Test
+    app.post('/addATest', verifyToken, verifyAdmin, async (req, res) => {
+      const test = req.body;
+      console.log(test);
+      const result = await testCollection.insertOne(test);
       res.send(result);
     });
 
