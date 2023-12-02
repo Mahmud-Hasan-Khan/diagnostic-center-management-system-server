@@ -235,6 +235,13 @@ async function run() {
       res.send(result);
     })
 
+
+    // get all Reservations for Admin
+    app.get('/allReservations', verifyToken, verifyAdmin, async (req, res) => {
+      const result = await appointmentCollection.find().toArray();
+      res.send(result);
+    });
+
     // get Appointments collection as per user email
     app.get('/upcomingAppointments', verifyToken, async (req, res) => {
       const email = req.query.email;
