@@ -208,10 +208,18 @@ async function run() {
     // cerate API for add a new Test
     app.post('/addATest', verifyToken, verifyAdmin, async (req, res) => {
       const test = req.body;
-      console.log(test);
+      // console.log(test);
       const result = await testCollection.insertOne(test);
       res.send(result);
     });
+
+    // delete test api data 
+    app.delete('/deleteTest/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await testCollection.deleteOne(query);
+      res.send(result)
+    })
 
     app.patch('/updateSlot/:id/decrementSlot', async (req, res) => {
       const id = req.params.id;
@@ -297,13 +305,7 @@ async function run() {
       res.send(result);
     });
 
-    // delete cart api 
-    app.delete('/carts/:id', async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) }
-      const result = await cartCollection.deleteOne(query);
-      res.send(result)
-    })
+
 
     // payment intent
 
