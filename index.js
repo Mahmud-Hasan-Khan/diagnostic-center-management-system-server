@@ -128,7 +128,7 @@ async function run() {
       }
     });
 
-    // update menu
+    // Update User Profile
     app.patch('/editUserProfile/:id', verifyToken, async (req, res) => {
       const userProfile = req.body;
       const id = req.params.id;
@@ -221,40 +221,19 @@ async function run() {
       res.send(result)
     })
 
-    app.patch('/updateSlot/:id/decrementSlot', async (req, res) => {
+    // Update Test
+    app.patch('/updateTest/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const userTest = req.body;
+      console.log(userTest);
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-
-      // Use $inc with a negative value to decrement the slots field
-      const result = await testCollection.updateOne(query, { $inc: { 'availableDates.$.slots': -1 } });
-
-      if (result.matchedCount === 1 && result.modifiedCount === 1) {
-        res.status(200).send('Slots decremented successfully');
-      } else {
-        res.status(404).send('Test not found or slots count not updated');
-      }
-    });
-
-
-    // update menu
-    app.patch('/menuEdit/:id', async (req, res) => {
-      const item = req.body;
-      const id = req.params.id;
-      // const filter = { _id: new ObjectId(id) }
       const filter = { _id: new ObjectId(id) }
       const updatedDoc = {
-        $set: {
-          name: item.name,
-          category: item.category,
-          price: item.price,
-          recipe: item.recipe,
-          image: item.image
-        }
+        $set: userTest
       }
-      const result = await menuCollection.updateOne(filter, updatedDoc)
+      console.log(updatedDoc);
+      const result = await testCollection.updateOne(filter, updatedDoc)
       res.send(result);
     })
-
 
     // get Appointments collection as per user email
     app.get('/upcomingAppointments', verifyToken, async (req, res) => {
