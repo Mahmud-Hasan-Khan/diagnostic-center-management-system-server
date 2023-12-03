@@ -315,6 +315,41 @@ async function run() {
       res.send(result)
     })
 
+    // set isActive=true for a specific banner and isActive=false for others
+    app.patch('/setActiveBanner/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const bannerId = req.params.id;
+
+      // Start a session to ensure atomicity in updates
+      const session = client.startSession();
+      session.startTransaction();
+
+      try {
+        // Set isActive=false for all banners
+        await bannerCollection.updateMany({}, { $set: { isActive: false } }, { session });
+
+        // Set isActive=true for the clicked banner
+        const result = await bannerCollection.updateOne(
+          { _id: new ObjectId(bannerId) },
+          { $set: { isActive: true } },
+          { session }
+        );
+
+        // Commit the transaction
+        await session.commitTransaction();
+
+        res.json({ updatedCount: result.modifiedCount });
+      } catch (error) {
+        // Abort the transaction on error
+        await session.abortTransaction();
+        console.error('Error setting banner as active:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      } finally {
+        // End the session
+        session.endSession();
+      }
+    });
+
+
     // update test Status for user only
     app.patch('/upcomingAppointment/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
