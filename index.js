@@ -287,19 +287,33 @@ async function run() {
 
     });
 
-    // get Test Result as per user
+    // get All banners 
+    app.get('/AllBanners', verifyToken, verifyAdmin, async (req, res) => {
+      const result = await bannerCollection.find().toArray();
+      res.send(result);
+    });
+
+    // get only isActive=true banner 
     app.get('/activeBanner', async (req, res) => {
       const result = await bannerCollection.findOne({ isActive: true });
       res.send(result);
     });
 
-    // cerate API for add a new Test
+    // cerate API for add a new banner
     app.post('/addBanner', verifyToken, verifyAdmin, async (req, res) => {
       const test = req.body;
       console.log(test);
       const result = await bannerCollection.insertOne(test);
       res.send(result);
     });
+
+    // delete test api data 
+    app.delete('/deleteBanner/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await bannerCollection.deleteOne(query);
+      res.send(result)
+    })
 
     // update test Status for user only
     app.patch('/upcomingAppointment/:id', verifyToken, async (req, res) => {
