@@ -250,6 +250,14 @@ async function run() {
       res.send(result);
     });
 
+    // get Test Result as per user
+    app.get('/testResults', verifyToken, async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email, reportStatus: "Delivered" }
+      const result = await appointmentCollection.find(query).toArray();
+      res.send(result);
+    });
+
     //create Appointments collection
     app.post('/upcomingAppointments', verifyToken, async (req, res) => {
       const appointment = req.body;
