@@ -32,6 +32,7 @@ async function run() {
     const userCollection = client.db("MediCareDb").collection("users");
     const testCollection = client.db("MediCareDb").collection("allTests");
     const appointmentCollection = client.db("MediCareDb").collection("upcomingAppointments");
+    const bannerCollection = client.db("MediCareDb").collection("banners");
     const paymentCollection = client.db("MediCareDb").collection("payments");
     // jwt related api start
     app.post('/jwt', async (req, res) => {
@@ -284,6 +285,20 @@ async function run() {
       const result = await appointmentCollection.insertOne(appointment)
       res.send(result);
 
+    });
+
+    // get Test Result as per user
+    app.get('/activeBanner', async (req, res) => {
+      const result = await bannerCollection.findOne({ isActive: true });
+      res.send(result);
+    });
+
+    // cerate API for add a new Test
+    app.post('/addBanner', verifyToken, verifyAdmin, async (req, res) => {
+      const test = req.body;
+      console.log(test);
+      const result = await bannerCollection.insertOne(test);
+      res.send(result);
     });
 
     // update test Status for user only
