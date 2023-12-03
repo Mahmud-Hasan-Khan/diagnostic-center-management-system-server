@@ -278,7 +278,7 @@ async function run() {
 
     });
 
-    // update user role
+    // update test Status for user only
     app.patch('/upcomingAppointment/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -288,6 +288,23 @@ async function run() {
         }
       }
       const result = await appointmentCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    // update report status only for admin
+    app.patch('/updateReportStatus/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const { reportLink } = req.body;
+      console.log(reportLink);
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          testStatus: 'Done',
+          reportStatus: 'Delivered',
+          reportLink: reportLink
+        }
+      }
+      const result = await appointmentCollection.updateOne(filter, updateDoc, { upsert: true });
       res.send(result);
     });
 
