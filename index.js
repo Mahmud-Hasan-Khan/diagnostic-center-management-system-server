@@ -41,6 +41,7 @@ async function run() {
     const recommendationCollection = client.db("MediCareDb").collection("recommendation");
     const blogCollection = client.db("MediCareDb").collection("healthWellness");
     const doctorCollection = client.db("MediCareDb").collection("findDoctors");
+    const departmentCollection = client.db("MediCareDb").collection("departments");
     // jwt related api start
     app.post('/jwt', async (req, res) => {
       const user = req.body;
@@ -245,7 +246,7 @@ async function run() {
 
 
     // get all Reservations for Admin
-    app.get('/allReservations', verifyAdmin, async (req, res) => {
+    app.get('/allReservations', verifyToken, verifyAdmin, async (req, res) => {
       const result = await appointmentCollection.find().toArray();
       res.send(result);
     });
@@ -438,6 +439,12 @@ async function run() {
     // get all doctors
     app.get('/findDoctors', async (req, res) => {
       const result = await doctorCollection.find().toArray();
+      res.send(result);
+    });
+
+    // get all departments
+    app.get('/departments', async (req, res) => {
+      const result = await departmentCollection.find().toArray();
       res.send(result);
     });
 
