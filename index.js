@@ -238,10 +238,46 @@ async function run() {
 
 
     // get all Reservations for Admin
-    app.get('/allReservations', verifyToken, verifyAdmin, async (req, res) => {
+    app.get('/allReservations', async (req, res) => {
       const result = await appointmentCollection.find().toArray();
       res.send(result);
     });
+
+    // get only mostly Booked Tests
+    app.get('/mostlyBookedTests', async (req, res) => {
+      try {
+        const allTests = await appointmentCollection.find().toArray();
+
+        // Group tests by test title and count bookings
+        const testCounts = allTests.reduce((acc, test) => {
+          const testTitle = test.testTitle;
+          acc[testTitle] = (acc[testTitle] || 0) + 1;
+          return acc;
+        }, {});
+
+        // Convert testCounts object to an array of { testTitle, bookingCount, image } objects
+        const testsWithCountsAndImages = Object.keys(testCounts).map(testTitle => {
+          const relevantTest = allTests.find(test => test.testTitle === testTitle);
+          return {
+            testTitle,
+            bookingCount: testCounts[testTitle],
+            image: relevantTest ? relevantTest.image : null,
+          };
+        });
+
+        // Sort tests by booking count in descending order
+        const sortedTests = testsWithCountsAndImages.sort((a, b) => b.bookingCount - a.bookingCount);
+
+        // You can customize the number of top tests to retrieve (e.g., top 5)
+        const topTests = sortedTests.slice(0, 10);
+
+        res.json(topTests);
+      } catch (error) {
+        console.error("Error fetching mostly booked tests:", error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    });
+
 
     // get Appointments collection as per user email
     app.get('/upcomingAppointments', verifyToken, async (req, res) => {
