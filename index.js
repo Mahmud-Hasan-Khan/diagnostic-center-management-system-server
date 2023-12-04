@@ -34,6 +34,7 @@ async function run() {
     const appointmentCollection = client.db("MediCareDb").collection("upcomingAppointments");
     const bannerCollection = client.db("MediCareDb").collection("banners");
     const paymentCollection = client.db("MediCareDb").collection("payments");
+    const recommendationCollection = client.db("MediCareDb").collection("recommendation");
     // jwt related api start
     app.post('/jwt', async (req, res) => {
       const user = req.body;
@@ -94,11 +95,11 @@ async function run() {
     })
 
     //get admin 
-    app.get('/user/admin/:email', verifyToken, async (req, res) => {
+    app.get('/user/admin/:email', async (req, res) => {
       const email = req.params.email;
-      if (email !== req.decoded.email) {
-        return res.status(403).send({ message: 'forbidden access' })
-      }
+      // if (email !== req.decoded.email) {
+      //   return res.status(403).send({ message: 'forbidden access' })
+      // }
       const query = { email: email };
       const user = await userCollection.findOne(query);
       let admin = false;
@@ -417,6 +418,10 @@ async function run() {
     });
 
 
+    app.get('/recommendation', async (req, res) => {
+      const result = await recommendationCollection.find().toArray();
+      res.send(result);
+    });
 
     // payment intent
 
