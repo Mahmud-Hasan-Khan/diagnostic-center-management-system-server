@@ -1,13 +1,17 @@
 const express = require('express');
+require('dotenv').config();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
-require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173'],
+  credentials: true
+}));
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -44,7 +48,7 @@ async function run() {
 
     // middlewares
     const verifyToken = (req, res, next) => {
-      console.log('inside verify Token', req.headers.authorization);
+      // console.log('inside verify Token', req.headers.authorization);
       if (!req.headers.authorization) {
         return res.status(401).send({ message: 'unauthorized access' });
       }
@@ -188,14 +192,14 @@ async function run() {
 
     app.get('/allTests', async (req, res) => {
       const today = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
-      console.log('Today:', today);
+      // console.log('Today:', today);
       try {
         const result = await testCollection.find({
           'availableDates.date': { $gte: today },
         }).toArray();
         res.send(result);
       } catch (error) {
-        console.error(error);
+        // console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
       }
     });
@@ -535,7 +539,7 @@ async function run() {
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
