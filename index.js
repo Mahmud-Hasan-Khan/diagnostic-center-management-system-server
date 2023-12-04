@@ -39,6 +39,7 @@ async function run() {
     const bannerCollection = client.db("MediCareDb").collection("banners");
     const paymentCollection = client.db("MediCareDb").collection("payments");
     const recommendationCollection = client.db("MediCareDb").collection("recommendation");
+    const blogCollection = client.db("MediCareDb").collection("healthWellness");
     // jwt related api start
     app.post('/jwt', async (req, res) => {
       const user = req.body;
@@ -427,6 +428,11 @@ async function run() {
       res.send(result);
     });
 
+    // get user
+    app.get('/healthWellness', async (req, res) => {
+      const result = await blogCollection.find().toArray();
+      res.send(result);
+    });
     // payment intent
 
     app.post('/create-payment-intent', async (req, res) => {
