@@ -193,6 +193,11 @@ async function run() {
 
     // all tests related api end point ----Start---------
 
+    app.get('/testsCount', async (req, res) => {
+      const count = await testCollection.estimatedDocumentCount();
+      res.send({ count });
+    })
+
     app.get('/allTests', async (req, res) => {
       const today = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
       // console.log('Today:', today);
